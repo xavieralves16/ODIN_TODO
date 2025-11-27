@@ -3,19 +3,38 @@ import Todo from "./todo.js";
 
 const dom = (() => {
 
-  let projectList;
-  let todoList;
-  let addProjectBtn;
-  let addTodoBtn;
+  let projectList, todoList;
+  let addProjectBtn, addTodoBtn;
+
+
+  let modal, modalTitle, modalSaveBtn, modalCancelBtn;
+  let inputTitle, inputDescription, inputDate, inputPriority;
+
+
+  let editingTodoIndex = null;
 
   function init() {
     projectList = document.querySelector("#project-list");
     todoList = document.querySelector("#todo-list");
+
     addProjectBtn = document.querySelector("#add-project-btn");
     addTodoBtn = document.querySelector("#add-todo-btn");
 
+    modal = document.querySelector("#modal");
+    modalTitle = document.querySelector("#modal-title");
+    modalSaveBtn = document.querySelector("#modal-save-btn");
+    modalCancelBtn = document.querySelector("#modal-cancel-btn");
+
+    inputTitle = document.querySelector("#todo-title");
+    inputDescription = document.querySelector("#todo-description");
+    inputDate = document.querySelector("#todo-date");
+    inputPriority = document.querySelector("#todo-priority");
+
     addProjectBtn.addEventListener("click", newProject);
     addTodoBtn.addEventListener("click", newTodo);
+
+    modalSaveBtn.addEventListener("click", saveTodo);
+    modalCancelBtn.addEventListener("click", closeModal);
 
     renderProjects();
     renderTodos();
@@ -35,6 +54,24 @@ const dom = (() => {
         renderTodos();
       });
 
+      // Botão remover
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "X";
+      removeBtn.style.marginLeft = "10px";
+      removeBtn.style.background = "red";
+      removeBtn.style.color = "white";
+      removeBtn.style.borderRadius = "5px";
+
+      removeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (confirm("Remover este projeto?")) {
+          projectController.removeProject(index);
+          renderProjects();
+          renderTodos();
+        }
+      });
+
+      div.appendChild(removeBtn);
       projectList.appendChild(div);
     });
   }
@@ -46,15 +83,33 @@ const dom = (() => {
     project.todos.forEach((todo, index) => {
       const div = document.createElement("div");
       div.classList.add("todo");
-      div.textContent = `${todo.title} (${todo.dueDate})`;
+
+      div.innerHTML = `
+        <strong>${todo.title}</strong> (${todo.dueDate})
+      `;
 
       div.addEventListener("click", () => {
-        if (confirm("Apagar tarefa?")) {
+        editingTodoIndex = index;
+        openModal(todo);
+      });
+
+
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "X";
+      removeBtn.style.marginLeft = "10px";
+      removeBtn.style.background = "red";
+      removeBtn.style.color = "white";
+      removeBtn.style.borderRadius = "5px";
+
+      removeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (confirm("Apagar esta tarefa?")) {
           projectController.removeTodo(index);
           renderTodos();
         }
       });
 
+      div.appendChild(removeBtn);
       todoList.appendChild(div);
     });
   }
@@ -68,21 +123,55 @@ const dom = (() => {
   }
 
   function newTodo() {
-    const title = prompt("Título:");
+    editingTodoIndex = null;
+    openModal();
+  }
+
+  function openModal(todo = null) {
+    modal.classList.remove("hidden");
+
+    if (todo) {
+      modalTitle.textContent = "Editar Tarefa";
+      inputTitle.value = todo.title;
+      inputDescription.value = todo.description;
+      inputDate.value = todo.dueDate;
+      inputPriority.value = todo.priority;
+    } else {
+      modalTitle.textContent = "Nova Tarefa";
+      inputTitle.value = "";
+      inputDescription.value = "";
+      inputDate.value = "";
+      inputPriority.value = "low";
+    }
+  }
+
+  function closeModal() {
+    modal.classList.add("hidden");
+  }
+
+  function saveTodo() {
+    const title = inputTitle.value.trim();
     if (!title) return;
 
-    const dueDate = prompt("Data (YYYY-MM-DD):", "2025-12-31");
-    const description = prompt("Descrição:");
-    const priority = prompt("Prioridade:");
+    const description = inputDescription.value.trim();
+    const dueDate = inputDate.value;
+    const priority = inputPriority.value;
 
     const todo = Todo(title, description, dueDate, priority);
-    projectController.addTodoToCurrent(todo);
 
+    if (editingTodoIndex === null) {
+      projectController.addTodoToCurrent(todo);
+    } else {
+      const project = projectController.getCurrentProject();
+      project.todos[editingTodoIndex] = todo;
+    }
+
+    closeModal();
     renderTodos();
   }
 
   return { init };
-
 })();
 
 export default dom;
+
