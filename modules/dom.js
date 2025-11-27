@@ -4,22 +4,25 @@ import Todo from "./todo.js";
 const dom = (() => {
   const projectList = document.querySelector("#project-list");
   const todoList = document.querySelector("#todo-list");
-  const newTodoBtn = document.querySelector("#new-todo-btn");
+
+  const addProjectBtn = document.querySelector("#add-project-btn");
+  const addTodoBtn = document.querySelector("#add-todo-btn");
 
   function renderProjects() {
     const projects = projectController.getProjects();
     projectList.innerHTML = "";
 
-    projects.forEach((project, i) => {
-      const el = document.createElement("div");
-      el.textContent = project.name;
+    projects.forEach((project, index) => {
+      const div = document.createElement("div");
+      div.classList.add("project-item");
+      div.textContent = project.name;
 
-      el.addEventListener("click", () => {
-        projectController.setCurrentProject(i);
+      div.addEventListener("click", () => {
+        projectController.setCurrentProject(index);
         renderTodos();
       });
 
-      projectList.appendChild(el);
+      projectList.appendChild(div);
     });
   }
 
@@ -27,29 +30,46 @@ const dom = (() => {
     const project = projectController.getCurrentProject();
     todoList.innerHTML = "";
 
-    project.todos.forEach((todo, i) => {
-      const el = document.createElement("div");
-      el.classList.add("todo");
+    project.todos.forEach((todo, index) => {
+      const div = document.createElement("div");
+      div.classList.add("todo");
 
-      el.innerHTML = `
-        <div class="todo-title">${todo.title}</div>
-        <div class="todo-date">${todo.dueDate}</div>
-      `;
+      div.textContent = `${todo.title} (${todo.dueDate})`;
 
-      el.addEventListener("click", () => expandTodo(todo));
+      div.addEventListener("click", () => {
+        if (confirm("Apagar esta tarefa?")) {
+          projectController.removeTodo(index);
+          renderTodos();
+        }
+      });
 
-      todoList.appendChild(el);
+      todoList.appendChild(div);
     });
   }
 
-  function expandTodo(todo) {
-    alert(`
-      Title: ${todo.title}
-      Description: ${todo.description}
-      Due: ${todo.dueDate}
-      Priority: ${todo.priority}
-    `);
-  }
+  // -------- BUTTON ACTIONS --------
+
+  addProjectBtn.addEventListener("click", () => {
+    const name = prompt("Nome do novo projeto:");
+    if (!name) return;
+
+    projectController.addProject(name);
+    renderProjects();
+  });
+
+  addTodoBtn.addEventListener("click", () => {
+    const title = prompt("Título da tarefa:");
+    if (!title) return;
+
+    const dueDate = prompt("Data (YYYY-MM-DD):", "2025-12-31");
+    const description = prompt("Descrição:");
+    const priority = prompt("Prioridade (low/medium/high):", "low");
+
+    const todo = Todo(title, description, dueDate, priority);
+    projectController.addTodoToCurrent(todo);
+
+    renderTodos();
+  });
 
   return {
     renderProjects,
