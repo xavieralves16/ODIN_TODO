@@ -6,10 +6,8 @@ const dom = (() => {
   let projectList, todoList;
   let addProjectBtn, addTodoBtn;
 
-
   let modal, modalTitle, modalSaveBtn, modalCancelBtn;
   let inputTitle, inputDescription, inputDate, inputPriority;
-
 
   let editingTodoIndex = null;
 
@@ -31,7 +29,7 @@ const dom = (() => {
     inputPriority = document.querySelector("#todo-priority");
 
     addProjectBtn.addEventListener("click", newProject);
-    addTodoBtn.addEventListener("click", newTodo);
+    addTodoBtn.addEventListener("click", () => openModal());
 
     modalSaveBtn.addEventListener("click", saveTodo);
     modalCancelBtn.addEventListener("click", closeModal);
@@ -41,10 +39,9 @@ const dom = (() => {
   }
 
   function renderProjects() {
-    const projects = projectController.getProjects();
     projectList.innerHTML = "";
 
-    projects.forEach((project, index) => {
+    projectController.getProjects().forEach((project, index) => {
       const div = document.createElement("div");
       div.classList.add("project-item");
       div.textContent = project.name;
@@ -54,17 +51,13 @@ const dom = (() => {
         renderTodos();
       });
 
-      // Botão remover
       const removeBtn = document.createElement("button");
+      removeBtn.classList.add("remove-btn");
       removeBtn.textContent = "X";
-      removeBtn.style.marginLeft = "10px";
-      removeBtn.style.background = "red";
-      removeBtn.style.color = "white";
-      removeBtn.style.borderRadius = "5px";
 
       removeBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (confirm("Remover este projeto?")) {
+        if (confirm("Remover projeto?")) {
           projectController.removeProject(index);
           renderProjects();
           renderTodos();
@@ -77,38 +70,38 @@ const dom = (() => {
   }
 
   function renderTodos() {
-    const project = projectController.getCurrentProject();
     todoList.innerHTML = "";
+    const project = projectController.getCurrentProject();
 
     project.todos.forEach((todo, index) => {
       const div = document.createElement("div");
-      div.classList.add("todo");
+      div.classList.add("todo-item");
 
-      div.innerHTML = `
-        <strong>${todo.title}</strong> (${todo.dueDate})
-      `;
+      div.innerHTML = `<span><strong>${todo.title}</strong> (${todo.dueDate})</span>`;
 
-      div.addEventListener("click", () => {
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Editar";
+      editBtn.classList.add("edit-btn");
+
+      editBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
         editingTodoIndex = index;
         openModal(todo);
       });
 
-
       const removeBtn = document.createElement("button");
       removeBtn.textContent = "X";
-      removeBtn.style.marginLeft = "10px";
-      removeBtn.style.background = "red";
-      removeBtn.style.color = "white";
-      removeBtn.style.borderRadius = "5px";
+      removeBtn.classList.add("remove-btn");
 
       removeBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (confirm("Apagar esta tarefa?")) {
+        if (confirm("Apagar tarefa?")) {
           projectController.removeTodo(index);
           renderTodos();
         }
       });
 
+      div.appendChild(editBtn);
       div.appendChild(removeBtn);
       todoList.appendChild(div);
     });
@@ -120,11 +113,6 @@ const dom = (() => {
 
     projectController.addProject(name);
     renderProjects();
-  }
-
-  function newTodo() {
-    editingTodoIndex = null;
-    openModal();
   }
 
   function openModal(todo = null) {
@@ -162,8 +150,7 @@ const dom = (() => {
     if (editingTodoIndex === null) {
       projectController.addTodoToCurrent(todo);
     } else {
-      const project = projectController.getCurrentProject();
-      project.todos[editingTodoIndex] = todo;
+      projectController.getCurrentProject().todos[editingTodoIndex] = todo;
     }
 
     closeModal();
@@ -171,7 +158,7 @@ const dom = (() => {
   }
 
   return { init };
+
 })();
 
 export default dom;
-

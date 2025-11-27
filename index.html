@@ -47,30 +47,40 @@
       background: #0056b3;
     }
 
-    .project-item {
+    .project-item, .todo-item {
       padding: 8px;
-      cursor: pointer;
       border-radius: 5px;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
       border: 1px solid #ddd;
       background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
     }
 
-    .project-item:hover {
+    .project-item:hover, .todo-item:hover {
       background: #e9e9e9;
     }
 
-    .todo {
-      padding: 8px;
+    .remove-btn {
+      background: red;
+      color: white;
+      border: none;
       border-radius: 5px;
-      margin-bottom: 5px;
-      border: 1px solid #ddd;
-      background: #fff;
+      padding: 4px 8px;
       cursor: pointer;
+      margin-left: 10px;
     }
 
-    .todo:hover {
-      background: #f0f0f0;
+    .edit-btn {
+      background: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 4px 8px;
+      cursor: pointer;
+      margin-left: 10px;
     }
 
     /* Modal */
@@ -106,7 +116,7 @@
 
   <h1>Todo App</h1>
 
-  <!-- Modal (AGORA NO LUGAR CERTO) -->
+  <!-- Modal -->
   <div id="modal" class="modal hidden">
     <div class="modal-content">
       <h3 id="modal-title"></h3>
@@ -152,4 +162,5 @@
 
 </body>
 </html>
+
 
