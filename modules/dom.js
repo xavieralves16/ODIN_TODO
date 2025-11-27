@@ -2,11 +2,24 @@ import projectController from "./projectController.js";
 import Todo from "./todo.js";
 
 const dom = (() => {
-  const projectList = document.querySelector("#project-list");
-  const todoList = document.querySelector("#todo-list");
 
-  const addProjectBtn = document.querySelector("#add-project-btn");
-  const addTodoBtn = document.querySelector("#add-todo-btn");
+  let projectList;
+  let todoList;
+  let addProjectBtn;
+  let addTodoBtn;
+
+  function init() {
+    projectList = document.querySelector("#project-list");
+    todoList = document.querySelector("#todo-list");
+    addProjectBtn = document.querySelector("#add-project-btn");
+    addTodoBtn = document.querySelector("#add-todo-btn");
+
+    addProjectBtn.addEventListener("click", newProject);
+    addTodoBtn.addEventListener("click", newTodo);
+
+    renderProjects();
+    renderTodos();
+  }
 
   function renderProjects() {
     const projects = projectController.getProjects();
@@ -33,11 +46,10 @@ const dom = (() => {
     project.todos.forEach((todo, index) => {
       const div = document.createElement("div");
       div.classList.add("todo");
-
       div.textContent = `${todo.title} (${todo.dueDate})`;
 
       div.addEventListener("click", () => {
-        if (confirm("Apagar esta tarefa?")) {
+        if (confirm("Apagar tarefa?")) {
           projectController.removeTodo(index);
           renderTodos();
         }
@@ -47,34 +59,30 @@ const dom = (() => {
     });
   }
 
-  // -------- BUTTON ACTIONS --------
-
-  addProjectBtn.addEventListener("click", () => {
-    const name = prompt("Nome do novo projeto:");
+  function newProject() {
+    const name = prompt("Nome do projeto:");
     if (!name) return;
 
     projectController.addProject(name);
     renderProjects();
-  });
+  }
 
-  addTodoBtn.addEventListener("click", () => {
-    const title = prompt("Título da tarefa:");
+  function newTodo() {
+    const title = prompt("Título:");
     if (!title) return;
 
     const dueDate = prompt("Data (YYYY-MM-DD):", "2025-12-31");
     const description = prompt("Descrição:");
-    const priority = prompt("Prioridade (low/medium/high):", "low");
+    const priority = prompt("Prioridade:");
 
     const todo = Todo(title, description, dueDate, priority);
     projectController.addTodoToCurrent(todo);
 
     renderTodos();
-  });
+  }
 
-  return {
-    renderProjects,
-    renderTodos,
-  };
+  return { init };
+
 })();
 
 export default dom;
